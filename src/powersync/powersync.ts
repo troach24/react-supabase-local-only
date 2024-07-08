@@ -22,19 +22,13 @@ export const AppSchema = new Schema([
 
 export let PowerSync: PowerSyncDatabase;
 
-const openDatabase = async () => {
+export const openDatabase = async () => {
   PowerSync = new PowerSyncDatabase({
     schema: AppSchema,
     database: { dbFilename: 'test.sqlite' }
   });
 
   await PowerSync.init();
-
-  // Run local statements.
-  await PowerSync.execute('INSERT INTO customers(id, name) VALUES(uuid(), ?)', ['Frank']);
-
-  // const result = await PowerSync.getAll('SELECT * FROM customers');
-  // console.log('contents of customers: ', result);
 
   console.log(
     `Attempting to connect in order to verify web workers are correctly loaded.
@@ -50,6 +44,6 @@ const openDatabase = async () => {
   await PowerSync.connect(new DummyConnector());
 };
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  openDatabase();
-});
+export async function insertCustomer() {
+  await PowerSync.execute('INSERT INTO customers(id, name) VALUES(uuid(), ?)', ['Frank']);
+}
