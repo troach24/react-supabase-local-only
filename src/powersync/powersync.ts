@@ -13,7 +13,7 @@ class DummyConnector {
     };
   }
 
-  async uploadData(database) {}
+  async uploadData() {}
 }
 
 export const AppSchema = new Schema([
@@ -41,7 +41,8 @@ export const openDatabase = async () => {
    * This will fail due to not having a valid endpoint,
    * but it will try - which is all that matters.
    */
-  await PowerSync.connect(new DummyConnector());
+  // await PowerSync.connect(new DummyConnector());
+  return PowerSync;
 };
 
 export async function insertCustomer() {

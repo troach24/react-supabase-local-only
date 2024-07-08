@@ -1,34 +1,50 @@
 import './App.css';
-import { useState, useEffect } from 'react';
-import { usePowerSync, useQuery } from "@powersync/react";
-import { PowerSync, openDatabase, insertCustomer } from './powersync/powersync';
+import { useQuery, PowerSyncContext } from "@powersync/react";
+import { openDatabase, insertCustomer } from './powersync/powersync';
+import {PowerSyncDatabase} from '@powersync/web';
 import Logger from 'js-logger';
-
+import React, { useEffect } from 'react';
 
 function App() {
   Logger.useDefaults();
-  usePowerSync();
 
-  // const [customers, setCustomers] = useState([]);
+  const [database, setDatabase] = React.useState<PowerSyncDatabase | null>(null);
 
   useEffect(() => {
-    const initializeDatabase = async () => {
-      await openDatabase();
-      // const customers = await PowerSync.getAll('SELECT * from customers');
-      // setCustomers(customers);
-    };
-    initializeDatabase();
+    (async () => {
+      setDatabase(await openDatabase());
+    })()
   }, []);
 
-  const { data: customers } = useQuery(`
-    SELECT * from customers
-  `);
+  if (!database) {
+    return <div>Loading...</div>
+  }
+
+  return <PowerSyncContext.Provider value={database}>
+    <Component />
+    <button type="button" onClick={() => insertCustomer()}>New Customer</button>
+  </PowerSyncContext.Provider>
+}
+
+export const Component = () => {
+
+  const { data: custs, error, isLoading } = useQuery('SELECT * from customers');
+
+  console.log('component rendering');
+  console.log('custs:', custs);
+  if (error) {
+    console.error('Error fetching customers:', error);
+  }
+  if (isLoading) {
+    console.log('Loading customers...');
+  }
 
   return <>
     <ul>
-      {customers.map(customer => <li key={customer.id}>{customer.name}</li>)}
+      <li key="foo">foo</li>
+      {custs && custs.map((l) => (
+        <li key={l.id}>{l.name}</li>))}
     </ul>
-    <button type="button" onClick={() => insertCustomer()}>New Customer</button>
   </>
 }
 
