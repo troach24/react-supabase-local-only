@@ -17,7 +17,19 @@ class DummyConnector {
 }
 
 export const AppSchema = new Schema([
-  new Table({ name: 'customers', columns: [new Column({ name: 'name', type: ColumnType.TEXT })] })
+  new Table(
+    {
+      name: 'customers',
+      columns: [
+        new Column(
+          { name: 'name', type: ColumnType.TEXT }
+        ),
+        new Column(
+          { name: 'location', type: ColumnType.TEXT }
+        ),
+      ]
+    }
+  )
 ]);
 
 export let PowerSync: PowerSyncDatabase;
@@ -45,6 +57,6 @@ export const openDatabase = async () => {
   return PowerSync;
 };
 
-export async function insertCustomer() {
-  await PowerSync.execute('INSERT INTO customers(id, name) VALUES(uuid(), ?)', ['Frank']);
+export async function insertCustomer(customer: { name: string, location: string }) {
+  await PowerSync.execute('INSERT INTO customers(id, name, location) VALUES(uuid(), ?, ?)', [customer.name, customer.location]);
 }
