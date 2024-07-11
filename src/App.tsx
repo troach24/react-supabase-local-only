@@ -2,7 +2,7 @@ import "./App.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import { useQuery, PowerSyncContext } from "@powersync/react";
-import { openDatabase, insertCustomer } from "./powersync/powersync";
+import { databaseConnecter, insertCustomer, PowerSyncConnector } from "./powersync/powersync";
 import { PowerSyncDatabase } from "@powersync/web";
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -14,13 +14,13 @@ import React, { useEffect, useState } from "react";
 function App() {
   Logger.useDefaults();
 
-  const [database, setDatabase] = React.useState<PowerSyncDatabase | null>(
+  const [database, setDatabase] = useState<PowerSyncDatabase | null>(
     null
   );
 
   useEffect(() => {
     (async () => {
-      setDatabase(await openDatabase());
+      setDatabase(await databaseConnecter());
     })();
   }, []);
 
@@ -30,16 +30,44 @@ function App() {
 
   return (
     <PowerSyncContext.Provider value={database}>
+      <DBSwitch db={database} />
       <Customers />
       <CustomerInput />
     </PowerSyncContext.Provider>
   );
 }
 
+export const DBSwitch = (props) => {
+  const [connection, setConnection] = useState("Local-Only");
+  
+  const switchDB = (dbString: string) => {
+    console.log(`Clicked ${dbString}`);
+    setConnection(dbString);
+    if (dbString === 'PowerSync') {
+      props.db.connect(new PowerSyncConnector());
+    } else {
+      props.db.disconnect();
+    }
+  }
+  
+  return (
+    <>
+      <p>Connection: {connection}</p>
+      <button type="button" onClick={() => switchDB('Local-Only')} style={{ 'marginTop': '10px' }}>
+        Local-Only
+      </button>
+      <button type="button" onClick={() => switchDB('PowerSync')} style={{ 'marginTop': '10px' }}>
+        PowerSync
+      </button>
+    </>
+  )
+}
+
 export const Customers = () => {
   const { data: customers, error, isLoading } = useQuery("SELECT * from customers");
   console.log("customers component rendering...");
-  
+  console.log('creds:')
+  console.log(import.meta.env.VITE_POWERSYNC_URL)
   if (error) {
     console.error("Error fetching customers:", error);
   } else if (isLoading) {
@@ -51,6 +79,7 @@ export const Customers = () => {
   return (
     <>
       <h3>Existing Customers</h3>
+      {!customers} <p>No current Customers</p>
       <ul>
         {customers && customers.map((customer) =>
           <li key={customer.id}>{customer.name} ({customer.location})</li>

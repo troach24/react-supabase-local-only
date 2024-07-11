@@ -5,11 +5,11 @@ import { Column, ColumnType, Schema, Table, PowerSyncDatabase } from '@powersync
  * This is just used to verify that the sync workers can be loaded
  * when connecting.
  */
-class DummyConnector {
+export class PowerSyncConnector {
   async fetchCredentials() {
     return {
-      endpoint: '',
-      token: ''
+      endpoint: import.meta.env.VITE_POWERSYNC_URL,
+      token: import.meta.env.POWERSYNC_DEV_TOKEN
     };
   }
 
@@ -34,7 +34,7 @@ export const AppSchema = new Schema([
 
 export let PowerSync: PowerSyncDatabase;
 
-export const openDatabase = async () => {
+export const databaseConnecter = async () => {
   PowerSync = new PowerSyncDatabase({
     schema: AppSchema,
     database: { dbFilename: 'test.sqlite' }
@@ -53,7 +53,7 @@ export const openDatabase = async () => {
    * This will fail due to not having a valid endpoint,
    * but it will try - which is all that matters.
    */
-  // await PowerSync.connect(new DummyConnector());
+  // await PowerSync.connect(new PowerSyncConnector());
   return PowerSync;
 };
 
