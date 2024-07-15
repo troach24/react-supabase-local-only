@@ -27,6 +27,19 @@ export const AppSchema = new Schema([
         new Column(
           { name: 'location', type: ColumnType.TEXT }
         ),
+        new Column(
+          { name: 'owner_id', type: ColumnType.TEXT }
+        ),
+      ]
+    }
+  ),
+  new Table(
+    {
+      name: 'users',
+      columns: [
+        new Column(
+          { name: 'name', type: ColumnType.TEXT }
+        ),
       ]
     }
   )
@@ -47,16 +60,13 @@ export const databaseConnecter = async () => {
     This doesn't use any actual network credentials.
     Network errors will be shown: these can be ignored.`
   );
-
-  /**
-   * Try and connect, this will setup shared sync workers
-   * This will fail due to not having a valid endpoint,
-   * but it will try - which is all that matters.
-   */
-  // await PowerSync.connect(new PowerSyncConnector());
   return PowerSync;
 };
 
-export async function insertCustomer(customer: { name: string, location: string }) {
-  await PowerSync.execute('INSERT INTO customers(id, name, location) VALUES(uuid(), ?, ?)', [customer.name, customer.location]);
+export async function insertCustomer(customer: { name: string, location: string }, uuid: string) {
+  await PowerSync.execute('INSERT INTO customers(id, name, location, owner_id) VALUES(uuid(), ?, ?, ?)', [customer.name, customer.location, uuid]);
+}
+
+export async function insertUser(user: { name: string}) {
+  await PowerSync.execute('INSERT INTO users(id, name) VALUES(uuid(), ?)', [user.name]);
 }

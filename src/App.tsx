@@ -2,14 +2,14 @@ import "./App.css";
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import { useQuery, PowerSyncContext } from "@powersync/react";
-import { databaseConnecter, insertCustomer, PowerSyncConnector } from "./powersync/powersync";
+import { databaseConnecter, insertCustomer, insertUser, PowerSyncConnector } from "./powersync/powersync";
 import { PowerSyncDatabase } from "@powersync/web";
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import Logger from "js-logger";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
   Logger.useDefaults();
@@ -17,6 +17,8 @@ function App() {
   const [database, setDatabase] = useState<PowerSyncDatabase | null>(
     null
   );
+  const [user, setUser] = useState<{ id: string, name: string } | null>(null);
+  const [connection, setConnection] = useState("Local-Only");
 
   useEffect(() => {
     (async () => {
@@ -30,19 +32,26 @@ function App() {
 
   return (
     <PowerSyncContext.Provider value={database}>
-      <DBSwitch db={database} />
+      <DBSwitch
+        db={database}
+        connection={connection}
+        setConnection={setConnection}
+      />
+      <User
+        connection={connection}
+        user={user}
+        setUser={setUser}
+      />
       <Customers />
-      <CustomerInput />
+      <CustomerInput user={user} />
     </PowerSyncContext.Provider>
   );
 }
 
-export const DBSwitch = (props) => {
-  const [connection, setConnection] = useState("Local-Only");
-  
+export const DBSwitch = (props: { db: { connect: (arg0: PowerSyncConnector) => void; disconnect: () => void; }, connection: string, setConnection: React.Dispatch<React.SetStateAction<string>> }) => {
   const switchDB = (dbString: string) => {
     console.log(`Clicked ${dbString}`);
-    setConnection(dbString);
+    props.setConnection(dbString);
     if (dbString === 'PowerSync') {
       props.db.connect(new PowerSyncConnector());
     } else {
@@ -52,7 +61,7 @@ export const DBSwitch = (props) => {
   
   return (
     <>
-      <p>Connection: {connection}</p>
+      <p>Connection: {props.connection}</p>
       <button type="button" onClick={() => switchDB('Local-Only')} style={{ 'marginTop': '10px' }}>
         Local-Only
       </button>
@@ -63,11 +72,42 @@ export const DBSwitch = (props) => {
   )
 }
 
+export const User = (props: { connection: string, user: any, setUser: any }) => {
+  const { data: users, error, isLoading } = useQuery("SELECT * from users LIMIT 1");
+  const createUser = () => {
+    insertUser({ name: 'Travis' });
+  }
+  const updateUser = (key: string, value: string) => {
+    props.setUser(() => ({
+      id: key,
+      name: value,
+    }));
+  };
+
+  console.log("users component rendering...");
+  if (error) {
+    console.error("Error fetching users:", error);
+  } else if (isLoading) {
+    console.log("Loading users...");
+  } else if (!props.user && users[0]) {
+    console.log('SET user...');
+    updateUser(users[0].id, users[0].name);
+  } else if (users && users.length === 0) {
+    console.log('create user...', users.length);
+    createUser();
+  }
+  console.log("user:", props.user);
+  return (
+    <></>
+  )
+}
+
 export const Customers = () => {
   const { data: customers, error, isLoading } = useQuery("SELECT * from customers");
+  if (!import.meta.env.VITE_POWERSYNC_URL) {
+    console.log(`issue with powersync URL`);
+  }
   console.log("customers component rendering...");
-  console.log('creds:')
-  console.log(import.meta.env.VITE_POWERSYNC_URL)
   if (error) {
     console.error("Error fetching customers:", error);
   } else if (isLoading) {
@@ -76,10 +116,17 @@ export const Customers = () => {
     console.log("customers:", customers);
   }
 
+  if (!customers || customers && customers.length === 0) {
+    return (
+      <>
+        <h3>No Existing Customers</h3>
+      </>
+    );
+  }
+
   return (
     <>
       <h3>Existing Customers</h3>
-      {!customers} <p>No current Customers</p>
       <ul>
         {customers && customers.map((customer) =>
           <li key={customer.id}>{customer.name} ({customer.location})</li>
@@ -89,7 +136,7 @@ export const Customers = () => {
   );
 };
 
-export const CustomerInput = () => {
+export const CustomerInput = (props: { user: any }) => {
   const [newName, setName] = useState("");
   const [newLocation, setLocation] = useState("");
   
@@ -102,7 +149,7 @@ export const CustomerInput = () => {
   }
   
   const addCustomer = () => {
-    insertCustomer({ name: newName, location: newLocation });
+    insertCustomer({ name: newName, location: newLocation }, props.user.id);
     setName("");
     setLocation("");
   }
