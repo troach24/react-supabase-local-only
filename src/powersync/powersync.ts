@@ -19,6 +19,22 @@ export class PowerSyncConnector {
 export const AppSchema = new Schema([
   new Table(
     {
+      name: 'local_customers',
+      columns: [
+        new Column(
+          { name: 'name', type: ColumnType.TEXT }
+        ),
+        new Column(
+          { name: 'location', type: ColumnType.TEXT }
+        ),
+        new Column(
+          { name: 'owner_id', type: ColumnType.TEXT }
+        ),
+      ]
+    }
+  ),
+  new Table(
+    {
       name: 'customers',
       columns: [
         new Column(
@@ -63,6 +79,9 @@ export const databaseConnecter = async () => {
   return PowerSync;
 };
 
+export async function insertLocalCustomer(customer: { name: string, location: string }, uuid: string) {
+  await PowerSync.execute('INSERT INTO local_customers(id, name, location, owner_id) VALUES(uuid(), ?, ?, ?)', [customer.name, customer.location, uuid]);
+}
 export async function insertCustomer(customer: { name: string, location: string }, uuid: string) {
   await PowerSync.execute('INSERT INTO customers(id, name, location, owner_id) VALUES(uuid(), ?, ?, ?)', [customer.name, customer.location, uuid]);
 }
