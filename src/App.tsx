@@ -32,30 +32,21 @@ function App() {
   }
 
   return (
-    <>
-      <PowerSyncContext.Provider value={database} />
+    <PowerSyncContext.Provider value={database}>
       {connection === 'Local-Only' ? <SignUp /> : <></>}
       <DBSwitch
         db={database}
         connection={connection}
         setConnection={setConnection}
-        customersTableName={customersTableName}
-        setCustomersTableName={setCustomersTableName}
-        />
+      />
       <User
         connection={connection}
         user={user}
         setUser={setUser}
-        />
-      <Customers
-        connection={connection}
-        customersTableName={customersTableName}
       />
-      <CustomerInput
-        user={user}
-        connection={connection}
-      />
-    </>
+      <Customers />
+      <CustomerInput user={user} />
+    </PowerSyncContext.Provider>
   );
 }
 
