@@ -1,33 +1,18 @@
-# React + TypeScript + Vite
+# PowerSync Local-Only Example
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is an app set up to switch between a local-only and PowerSync schema. A user can consume a 'free' version which persists data locally. Once they 'Sign Up' PowerSync will switch on and register them as a Supabase user.
 
-Currently, two official plugins are available:
+1) [done] generate tmp user_id UUID locally
+2) [done] assign all records with that value
+3) [WIP in `local-cust-table` branch] Query/store data to the `local_customers` or `customers` table depending whether PowerSync is off or on 
+4) [ ] When PowerSync is switched on, register the user in supabase, in the response you get the UUID
+5) [ ] replace all the local records with this new UUID
+6) [ ] Copy the data over into synced (`customers`) table
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Development Setup Instructions
+1. Clone this repo
+2. `pn install`
+3. Copy .env.local.template into .env.local and insert your environment variables and PowerSync development token
+4. `pn dev`
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
-
-TODO
-https://vitejs.dev/guide/#community-templates
+Built using [React + TypeScript + Vite](https://vitejs.dev/guide/#scaffolding-your-first-vite-project)
