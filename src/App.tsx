@@ -38,13 +38,17 @@ function App() {
         db={database}
         connection={connection}
         setConnection={setConnection}
+        setCustomersTableName={setCustomersTableName}
       />
       <User
         connection={connection}
         user={user}
         setUser={setUser}
       />
-      <Customers />
+      <Customers
+        connection={connection}
+        customersTableName={customersTableName}
+      />
       <CustomerInput user={user} />
     </PowerSyncContext.Provider>
   );
@@ -57,9 +61,11 @@ export const DBSwitch = (props: { db: { connect: (arg0: PowerSyncConnector) => v
     if (dbString === 'PowerSync') {
       props.db.connect(new PowerSyncConnector());
       props.setCustomersTableName("customers");
+      console.log(`1 ${props.customersTableName}`);
     } else {
       props.db.disconnect();
       props.setCustomersTableName("local_customers");
+      console.log(`2 ${props.customersTableName}`);
     }
   }
   
@@ -108,6 +114,7 @@ export const User = (props: { connection: string, user: any, setUser: any }) => 
 }
 
 export const Customers = (props: { connection: string, customersTableName: string }) => {
+  console.log(`Customers comp: ${JSON.stringify(props)}`)
   const { data: customers, error, isLoading } = useQuery(`SELECT * from ${props.customersTableName}`);
   
   if (!import.meta.env.VITE_POWERSYNC_URL) {
