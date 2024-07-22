@@ -32,7 +32,8 @@ function App() {
   }
 
   return (
-    <PowerSyncContext.Provider value={database}>
+    <>
+      <PowerSyncContext.Provider value={database} />
       {connection === 'Local-Only' ? <SignUp /> : <></>}
       <DBSwitch
         db={database}
