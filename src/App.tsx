@@ -10,6 +10,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import Logger from "js-logger";
 import { useEffect, useState } from "react";
+import { SignUp } from "./SignUp";
 
 function App() {
   Logger.useDefaults();
@@ -32,6 +33,7 @@ function App() {
 
   return (
     <PowerSyncContext.Provider value={database}>
+      {connection === 'Local-Only' ? <SignUp /> : <></>}
       <DBSwitch
         db={database}
         connection={connection}
